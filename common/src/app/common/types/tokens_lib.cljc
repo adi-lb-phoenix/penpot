@@ -1060,6 +1060,9 @@ Will return a value that matches this schema:
                     :active-themes #{}))
 
   ([& {:keys [sets themes active-themes]}]
+   (prn "sets" sets)
+   (prn "themes" themes)
+   (prn "active-themes" active-themes)
    (let [tokens-lib (TokensLib. sets themes (or active-themes #{}))]
 
      (dm/assert!

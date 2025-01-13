@@ -23,6 +23,7 @@
    [app.common.types.page :as ctp]
    [app.common.types.plugins :as ctpg]
    [app.common.types.shape :as cts]
+   [app.common.types.tokens-lib :as cto]
    [app.common.types.typography :as cty]
    [app.common.uuid :as uuid]
    [app.config :as cf]
@@ -255,6 +256,7 @@
         typographies (:typographies data)
         components   (:components data)
         colors       (:colors data)
+        tokens-lib   (:tokens-lib data)
 
         pages        (:pages data)
         pages-index  (:pages-index data)
@@ -325,9 +327,13 @@
         (write-entry! output path color)))
 
     (doseq [[id object] typographies]
-      (let [path  (str "files/" file-id "/typographies/" id ".json")
-            color (encode-typography object)]
-        (write-entry! output path color)))))
+      (let [path       (str "files/" file-id "/typographies/" id ".json")
+            typography (encode-typography object)]
+        (write-entry! output path typography)))
+    
+    (let [path           (str "files/" file-id "/tokens.json")
+          encoded-tokens @tokens-lib]
+      (write-entry! output path encoded-tokens))))
 
 (defn- export-files
   [{:keys [::ids ::include-libraries ::output] :as cfg}]
@@ -463,6 +469,14 @@
         {:entry entry
          :id (parse-uuid id)}))))
 
+(defn- match-tokens-lib-entry-fn
+  [file-id]
+  (let [pattern (str "^files/" file-id "/tokens.json$")
+        pattern (re-pattern pattern)]
+    (fn [entry]
+      (when-let [[_] (re-matches pattern (zip-entry-name entry))]
+        {:entry entry}))))
+
 (defn- match-thumbnail-entry-fn
   [file-id]
   (let [pattern (str "^files/" file-id "/thumbnails/([^/]+)/([^/]+)/([^/]+).json$")
@@ -578,6 +592,13 @@
                {})
        (not-empty)))
 
+(defn- read-file-tokens-lib
+  [{:keys [::input ::file-id ::entries]}]
+  (when-let [entry (d/seek (match-tokens-lib-entry-fn file-id) entries)]
+    (->> (read-entry input entry)
+         (cto/make-tokens-lib)
+         (cto/check-tokens-lib!))))
+
 (defn- read-file-shapes
   [{:keys [::input ::file-id ::page-id ::entries] :as cfg}]
   (->> (keep (match-shape-entry-fn file-id page-id) entries)
@@ -626,6 +647,7 @@
   [{:keys [] :as cfg}]
   (let [colors       (read-file-colors cfg)
         typographies (read-file-typographies cfg)
+        tokens-lib   (read-file-tokens-lib cfg)
         components   (read-file-components cfg)
         plugin-data  (read-file-plugin-data cfg)
         pages        (read-file-pages cfg)]
@@ -634,6 +656,7 @@
      :pages-index (into {} pages)
      :colors colors
      :typographies typographies
+     :tokens-lib tokens-lib
      :components components
      :plugin-data plugin-data}))
 
