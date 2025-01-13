@@ -652,6 +652,8 @@ used for managing active sets without a user created theme.")
 (def valid-active-token-themes?
   (sm/validator schema:active-token-themes))
 
+(sm/register! ::active-token-themes schema:active-token-themes)
+
 ;; === Import / Export from DTCG format
 
 (defn flatten-nested-tokens-json
@@ -1072,11 +1074,21 @@ Will return a value that matches this schema:
   [tokens-lib]
   (or tokens-lib (make-tokens-lib)))
 
-(def type:tokens-lib
-  {:type ::tokens-lib
-   :pred valid-tokens-lib?})
+(def schema:tokens-lib
+  [:and
+   [:map {:title "TokensLib"}
+    [:sets ::token-sets]
+    [:themes ::token-themes]
+    [:active-themes ::active-token-themes]]
+   [:fn (partial instance? TokensLib)]])
 
-(sm/register! ::tokens-lib type:tokens-lib)
+(sm/register! ::tokens-lib schema:tokens-lib)
+
+;; (def type:tokens-lib
+;;   {:type ::tokens-lib
+;;    :pred valid-tokens-lib?})
+;; 
+;; (sm/register! ::tokens-lib type:tokens-lib)
 
 ;; === Serialization handlers for RPC API (transit) and database (fressian)
 

@@ -23,6 +23,7 @@
    [app.common.types.page :as ctp]
    [app.common.types.plugins :as ctpg]
    [app.common.types.shape :as cts]
+   [app.common.types.tokens-lib :as cto]
    [app.common.types.typography :as cty]
    [app.common.uuid :as uuid]
    [app.config :as cf]
@@ -101,6 +102,9 @@
 
 (def encode-typography
   (sm/encoder ::cty/typography sm/json-transformer))
+
+(def encode-tokens-lib
+  (sm/encoder ::cto/tokens-lib sm/json-transformer))
 
 (def encode-plugin-data
   (sm/encoder ::ctpg/plugin-data sm/json-transformer))
@@ -255,6 +259,7 @@
         typographies (:typographies data)
         components   (:components data)
         colors       (:colors data)
+        tokens-lib   (:tokens-lib data)
 
         pages        (:pages data)
         pages-index  (:pages-index data)
@@ -325,9 +330,13 @@
         (write-entry! output path color)))
 
     (doseq [[id object] typographies]
-      (let [path  (str "files/" file-id "/typographies/" id ".json")
-            color (encode-typography object)]
-        (write-entry! output path color)))))
+      (let [path       (str "files/" file-id "/typographies/" id ".json")
+            typography (encode-typography object)]
+        (write-entry! output path typography)))
+    
+    (let [path           (str "files/" file-id "/tokens.json")
+          encoded-tokens (encode-tokens-lib tokens-lib)]
+      (write-entry! output path encoded-tokens))))
 
 (defn- export-files
   [{:keys [::ids ::include-libraries ::output] :as cfg}]
