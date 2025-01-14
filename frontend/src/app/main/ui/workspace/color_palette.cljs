@@ -155,7 +155,7 @@
 (mf/defc color-palette
   {::mf/wrap [mf/memo]}
   [{:keys [size width selected] :as props}]
-  (let [recent-colors (mf/deref refs/workspace-recent-colors)
+  (let [recent-colors (mf/deref refs/recent-colors)
         file-colors   (mf/deref refs/workspace-file-colors)
         shared-libs   (mf/deref refs/libraries)
         colors        (mf/use-state [])]
