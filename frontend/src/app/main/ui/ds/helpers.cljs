@@ -11,4 +11,12 @@
 
 (def default
   (mf/object
-   {:uuid parse-uuid}))
+   {:uuid parse-uuid
+    :linear :linear
+    :radial :radial
+    :stops [{:color "#151035"
+             :opacity 1
+             :offset 0},
+            {:color "#2f226c"
+             :opacity 0.5
+             :offset 1}]}))
